@@ -23,9 +23,12 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Model artifacts (will be tracked later if needed)
+# Ignore random pickles, but KEEP saved models under models/
 *.pkl
 *.joblib
+!models/
+!models/*.pkl
+!models/*.joblib
 
 # Logs
 *.log

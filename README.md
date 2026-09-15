@@ -6,50 +6,75 @@ Beginner-friendly end-to-end project that predicts customer churn, estimates lif
 
 ### Day 1 — Completed ✅
 
-- Dataset loaded (IBM Telco Customer Churn — 7,043 customers, 21 columns)
-- Data cleaning completed (`TotalCharges` converted to numeric; 11 blank values for `tenure = 0` filled with 0)
-- EDA completed (10 visualizations saved in `reports/figures/`)
-- Churn analysis completed
-- Cleaned dataset created (`data/processed/cleaned_telco.csv`)
-- PostgreSQL database created (`churn_ltv_db`)
-- Customer table created (`customers`)
-- Data loaded into PostgreSQL (7,043 rows)
-- SQL analysis completed (`sql/analysis_queries.sql`)
+- Dataset loading
+- Data cleaning
+- Exploratory Data Analysis
+- PostgreSQL database
+- SQL analysis
 
-#### Day 1 pipeline
+#### Day 1 details (real results)
+
+- Dataset: IBM Telco Customer Churn — 7,043 customers, 21 columns
+- Overall churn rate: **26.54%** (1,869 churned / 5,174 not churned)
+- Month-to-month churn: 42.71% | Two-year: 2.83%
+- Fiber optic churn: 41.89% | Electronic check: 45.29%
 
 ```
 Telco CSV → Pandas → Cleaning → EDA → Cleaned CSV → PostgreSQL → SQL Analysis
 ```
 
-#### Key findings from Day 1 (real results)
+### Day 2 — Completed ✅
 
-| Metric | Value |
-|--------|-------|
-| Overall churn rate | 26.54% (1,869 churned / 5,174 not churned) |
-| Month-to-month contract churn | 42.71% |
-| One-year contract churn | 11.27% |
-| Two-year contract churn | 2.83% |
-| Fiber optic internet churn | 41.89% |
-| Electronic check payment churn | 45.29% |
-| Avg tenure (churned vs not) | 17.98 vs 37.57 months |
-| Avg monthly charges (churned vs not) | $74.44 vs $61.27 |
+- Feature engineering
+- Numerical/categorical feature identification
+- Categorical encoding (`OneHotEncoder`, `handle_unknown="ignore"`)
+- Numerical preprocessing (`StandardScaler`)
+- Train/test split (80/20, stratified, `random_state=42`)
+- Class balance analysis
+- Reusable preprocessing pipeline (`src/preprocessing.py`)
+- Saved preprocessing model (`models/preprocessor.pkl`)
+
+#### Day 2 details (real outputs)
+
+| Item | Value |
+|------|-------|
+| Features before encoding | 26 (customerID excluded) |
+| Train / test sizes | 5,634 / 1,409 |
+| Churn rate (train & test) | 26.54% / 26.54% (stratified) |
+| ML-ready columns after transform | 55 |
+| Missing values after transform | 0 |
+
+```
+Cleaned CSV → Feature Engineering → Encoding/Scaling → Train/Test Split → ML-ready data
+```
+
+Engineered features: `tenure_group`, `total_services`, `has_security_service`, `has_streaming_service`, `is_month_to_month`, `is_long_term_customer`, `average_monthly_revenue`
 
 ## Project Structure
 
 ```
 Customer-Churn-Prediction/
-├── data/raw/              # Original Telco CSV
-├── data/processed/        # Cleaned dataset
-├── notebooks/             # EDA and analysis notebooks
-├── src/                   # Python scripts
-├── models/                # Saved ML models (later)
-├── api/                   # FastAPI app (later)
-├── dashboard/             # Dashboard (later)
-├── sql/                   # SQL analysis queries
-├── tests/                 # Tests (later)
-├── reports/figures/       # EDA charts
-├── .env                   # Database credentials (local only — not in Git)
+├── data/raw/                 # Original Telco CSV
+├── data/processed/           # Cleaned + featured + train/test splits
+├── notebooks/
+│   ├── 01_eda.ipynb
+│   └── 02_feature_engineering.ipynb
+├── src/
+│   ├── check_data.py
+│   ├── load_to_postgres.py
+│   ├── preprocessing.py
+│   ├── run_eda_day1.py
+│   └── run_day2.py
+├── models/
+│   ├── preprocessor.pkl
+│   └── feature_columns.pkl
+├── reports/
+│   ├── figures/              # Day 1 EDA charts
+│   └── feature_summary.csv   # Day 2 feature dictionary
+├── sql/
+├── api/
+├── dashboard/
+├── tests/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
@@ -81,14 +106,23 @@ IBM Telco Customer Churn CSV:
 ## Day 1 Commands
 
 ```powershell
-# Inspect raw data
 python src/check_data.py
-
-# Run cleaning + EDA (optional helper; same logic as the notebook)
 python src/run_eda_day1.py
-
-# Or open notebooks/01_eda.ipynb and Run All
-
-# Load cleaned data into PostgreSQL (after creating churn_ltv_db and editing .env)
 python src/load_to_postgres.py
 ```
+
+## Day 2 Commands
+
+```powershell
+# Run feature engineering + preprocessing end-to-end
+python src/run_day2.py
+
+# Or open notebooks/02_feature_engineering.ipynb and Run All
+```
+
+Outputs:
+
+- `data/processed/X_train.csv`, `X_test.csv`, `y_train.csv`, `y_test.csv`
+- `models/preprocessor.pkl`
+- `models/feature_columns.pkl`
+- `reports/feature_summary.csv`

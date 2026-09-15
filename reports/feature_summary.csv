@@ -1,0 +1,29 @@
+Feature,Type,Description,Used for ML
+customerID,Identifier,Unique customer identifier,No
+Churn,Target,Whether the customer left (Yes/No -> 1/0),Target only
+gender,Categorical,Customer gender,Yes
+SeniorCitizen,Binary numeric,"1 if senior citizen, else 0",Yes
+Partner,Categorical,Whether customer has a partner,Yes
+Dependents,Categorical,Whether customer has dependents,Yes
+tenure,Numerical,Months the customer has stayed with the company,Yes
+PhoneService,Categorical,Has phone service,Yes
+MultipleLines,Categorical,Multiple phone lines status,Yes
+InternetService,Categorical,Internet service type (DSL / Fiber / None),Yes
+OnlineSecurity,Categorical,Online security add-on,Yes
+OnlineBackup,Categorical,Online backup add-on,Yes
+DeviceProtection,Categorical,Device protection add-on,Yes
+TechSupport,Categorical,Tech support add-on,Yes
+StreamingTV,Categorical,Streaming TV add-on,Yes
+StreamingMovies,Categorical,Streaming movies add-on,Yes
+Contract,Categorical,Contract type (month-to-month / 1yr / 2yr),Yes
+PaperlessBilling,Categorical,Uses paperless billing,Yes
+PaymentMethod,Categorical,How the customer pays,Yes
+MonthlyCharges,Numerical,Current monthly bill amount,Yes
+TotalCharges,Numerical,Total amount charged to date,Yes
+tenure_group,Categorical (engineered),Tenure bucket: 0-12 / 13-24 / 25-48 / 49-72 months,Yes
+total_services,Numerical (engineered),Count of services with value Yes,Yes
+has_security_service,Binary (engineered),1 if any of OnlineSecurity/Backup/DeviceProtection/TechSupport is Yes,Yes
+has_streaming_service,Binary (engineered),1 if StreamingTV or StreamingMovies is Yes,Yes
+is_month_to_month,Binary (engineered),1 if Contract is Month-to-month,Yes
+is_long_term_customer,Binary (engineered),1 if tenure >= 24 months,Yes
+average_monthly_revenue,Numerical (engineered),TotalCharges / tenure (or MonthlyCharges if tenure=0),Yes
