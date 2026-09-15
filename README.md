@@ -32,11 +32,18 @@ Beginner-friendly end-to-end project that predicts customer churn, estimates lif
 - Customer risk classification
 - Saved trained churn model
 
-## Machine Learning Results
+### Day 4 — Completed ✅
 
-Actual test-set results (Day 2 split: 5,634 train / 1,409 test, `random_state=42`, stratified).
+- Estimated Lifetime Revenue (LTV Proxy)
+- LTV segments (terciles)
+- Churn risk + LTV retention priority
+- High-risk / high-LTV customer list
+- SHAP global feature importance
+- SHAP individual customer explanation
 
-Metrics below are for the **churn class (Yes = 1)**.
+## Machine Learning Results (Day 3)
+
+Actual test-set results (5,634 train / 1,409 test). Metrics for churn class (Yes = 1):
 
 | Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
 |-------|----------|-----------|--------|----------|---------|
@@ -44,56 +51,114 @@ Metrics below are for the **churn class (Yes = 1)**.
 | Random Forest | 0.7807 | 0.6102 | 0.4813 | 0.5381 | 0.8203 |
 | **XGBoost (best)** | **0.8077** | **0.6758** | **0.5294** | **0.5937** | **0.8443** |
 
-**Best model selected: XGBoost**
+## Day 4 — LTV Estimation & SHAP Explainability
 
-Selection was based primarily on **F1 Score**, then **Recall**, then **ROC-AUC** (not Accuracy alone), because the dataset is imbalanced (~26.54% churn).
+### LTV Methodology
 
-**Test-set risk levels** (initial thresholds: Low &lt; 0.30, Medium &lt; 0.60, High ≥ 0.60):
+The Telco dataset **does not** contain a true future Customer Lifetime Value target.
+This project therefore uses an **Estimated Lifetime Revenue / LTV Proxy** — useful for prioritization, **not** actual future revenue.
 
-| Risk | Customers |
-|------|-----------|
-| Low | 872 |
-| Medium | 333 |
-| High | 204 |
-
-High-risk customers (204 / 1,409) are a practical first list for telecom retention outreach.
+Formula:
 
 ```
-Cleaned → Features → Split → Preprocess → LR / RF / XGBoost → Best Model → Probability → Risk
+estimated_ltv = MonthlyCharges × estimated_lifetime_months
+estimated_lifetime_months = tenure + expected_remaining_months
+
+If Churn == Yes:
+    expected_remaining_months = 0
+Else:
+    expected_remaining_months =
+        CONTRACT_BASE_REMAINING_MONTHS[Contract] × (1 - churn_probability)
 ```
+
+Documented contract assumptions (MVP, not proven forecasts):
+
+| Contract | Base remaining months |
+|----------|----------------------|
+| Month-to-month | 6 |
+| One year | 12 |
+| Two year | 24 |
+
+### LTV Segmentation
+
+Low / Medium / High segments use **data-driven terciles** of `estimated_ltv` (33rd / 66th percentiles).
+
+From the actual run on all 7,043 customers:
+
+| Segment | Threshold (approx.) | Mean estimated_ltv |
+|---------|---------------------|--------------------|
+| Low | ≤ 894.00 | 363.97 |
+| Medium | ≤ 3206.13 | 1837.73 |
+| High | > 3206.13 | 6199.98 |
+
+### Churn + LTV
+
+Day 3 churn probabilities are scored for all customers (no model retraining), then combined with LTV segments into a `retention_priority` field.
+
+Documented MVP priority rules (not universal business law):
+
+- High risk + High LTV → **Critical**
+- High risk + Medium LTV → High
+- High risk + Low LTV → Medium
+- Medium risk + High LTV → High
+- Low risk + High LTV → Monitor
+- otherwise → Low / Medium as mapped in code
+
+Actual counts from Day 4:
+
+| retention_priority | Customers |
+|--------------------|-----------|
+| Low | 3180 |
+| Monitor | 1927 |
+| Medium | 1282 |
+| High | 600 |
+| Critical | 54 |
+
+**High-risk + High-LTV customers identified: 54** (mean estimated_ltv ≈ 4356.59).
+These accounts may deserve higher-priority retention attention. Retention is not guaranteed to prevent churn.
+
+### SHAP Explainability
+
+SHAP explains the saved Day 3 **XGBoost** model (`TreeExplainer`).
+
+- Global importance: which features most influence churn predictions overall
+- Individual explanation: which features pushed one customer's score toward/away from churn
+- SHAP shows **model contribution / association**, not proof of causation
+
+Actual top SHAP features (mean |SHAP| on a 500-customer sample):
+
+1. `is_month_to_month`
+2. `tenure`
+3. `OnlineSecurity_No`
+4. `MonthlyCharges`
+5. `TechSupport_No`
+
+Example individual explanation (customer `1024-GUALD`): Actual Yes, Predicted Yes, probability 0.6748, High risk — driven upward mainly by month-to-month status and short tenure-related signals.
 
 ## Project Structure
 
 ```
 Customer-Churn-Prediction/
-├── data/raw/
-├── data/processed/
 ├── notebooks/
 │   ├── 01_eda.ipynb
 │   ├── 02_feature_engineering.ipynb
-│   └── 03_churn_model.ipynb
+│   ├── 03_churn_model.ipynb
+│   ├── 04_ltv_model.ipynb
+│   └── 05_shap_analysis.ipynb
 ├── src/
-│   ├── check_data.py
-│   ├── load_to_postgres.py
 │   ├── preprocessing.py
 │   ├── churn_model.py
-│   ├── run_eda_day1.py
-│   ├── run_day2.py
-│   └── run_day3.py
+│   ├── ltv_model.py
+│   ├── run_day3.py
+│   └── run_day4.py
 ├── models/
 │   ├── preprocessor.pkl
-│   ├── feature_columns.pkl
-│   ├── churn_model.pkl
-│   └── churn_model_metadata.pkl
+│   └── churn_model.pkl
 ├── reports/
-│   ├── figures/
-│   ├── model_comparison.csv
-│   ├── sample_predictions.csv
-│   └── feature_summary.csv
-├── sql/
-├── .gitignore
-├── requirements.txt
-└── README.md
+│   ├── retention_priority.csv
+│   ├── shap_feature_importance.csv
+│   └── figures/
+└── requirements.txt
 ```
 
 ## Quick Start (Windows)
@@ -105,30 +170,13 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Create a local `.env` file (do not commit it):
-
-```env
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/churn_ltv_db
-```
-
-If your password contains `@`, URL-encode it as `%40`.
-
-## Dataset
-
-IBM Telco Customer Churn CSV: `data/raw/telco_churn.csv`
-
 ## Commands
 
 ```powershell
-# Day 1
-python src/check_data.py
-python src/run_eda_day1.py
-python src/load_to_postgres.py
-
-# Day 2
+python src/run_day1.py   # if using helpers
 python src/run_day2.py
-
-# Day 3
 python src/run_day3.py
-# Or open notebooks/03_churn_model.ipynb and Run All
+python src/run_day4.py
+
+# Or open notebooks/04_ltv_model.ipynb and notebooks/05_shap_analysis.ipynb
 ```

@@ -1,0 +1,45 @@
+Day 4 Results
+=============
+
+
+Estimated Lifetime Revenue (LTV Proxy)
+======================================
+Formula:
+  estimated_ltv = MonthlyCharges x estimated_lifetime_months
+
+  estimated_lifetime_months = tenure + expected_remaining_months
+
+  If Churn == Yes (already left):
+      expected_remaining_months = 0
+  Else:
+      expected_remaining_months =
+          CONTRACT_BASE_REMAINING_MONTHS[Contract] x (1 - churn_probability)
+
+Contract base remaining months (documented assumption):
+  Month-to-month -> 6
+  One year      -> 12
+  Two year      -> 24
+
+This is NOT actual future LTV. It is a transparent proxy for prioritization.
+
+LTV terciles: q33=894.00, q66=3206.13
+High-risk High-LTV customers: 54
+Critical priority customers: 54
+
+Top SHAP features:
+                       feature  mean_absolute_shap_value
+             is_month_to_month                  0.746528
+                        tenure                  0.415025
+             OnlineSecurity_No                  0.249921
+                MonthlyCharges                  0.183834
+                TechSupport_No                  0.179938
+   InternetService_Fiber optic                  0.172434
+                  TotalCharges                  0.166371
+       average_monthly_revenue                  0.156736
+PaymentMethod_Electronic check                  0.152084
+              MultipleLines_No                  0.117226
+           PaperlessBilling_No                  0.116609
+             Contract_Two year                  0.113289
+             Contract_One year                  0.089792
+               OnlineBackup_No                  0.058831
+                 SeniorCitizen                  0.043164
