@@ -8,73 +8,89 @@ Beginner-friendly end-to-end project that predicts customer churn, estimates lif
 
 - Dataset loading
 - Data cleaning
-- Exploratory Data Analysis
-- PostgreSQL database
+- EDA
+- PostgreSQL
 - SQL analysis
-
-#### Day 1 details (real results)
-
-- Dataset: IBM Telco Customer Churn — 7,043 customers, 21 columns
-- Overall churn rate: **26.54%** (1,869 churned / 5,174 not churned)
-- Month-to-month churn: 42.71% | Two-year: 2.83%
-- Fiber optic churn: 41.89% | Electronic check: 45.29%
-
-```
-Telco CSV → Pandas → Cleaning → EDA → Cleaned CSV → PostgreSQL → SQL Analysis
-```
 
 ### Day 2 — Completed ✅
 
 - Feature engineering
-- Numerical/categorical feature identification
-- Categorical encoding (`OneHotEncoder`, `handle_unknown="ignore"`)
-- Numerical preprocessing (`StandardScaler`)
-- Train/test split (80/20, stratified, `random_state=42`)
-- Class balance analysis
-- Reusable preprocessing pipeline (`src/preprocessing.py`)
-- Saved preprocessing model (`models/preprocessor.pkl`)
+- Encoding
+- Preprocessing
+- Train/test split
 
-#### Day 2 details (real outputs)
+### Day 3 — Completed ✅
 
-| Item | Value |
-|------|-------|
-| Features before encoding | 26 (customerID excluded) |
-| Train / test sizes | 5,634 / 1,409 |
-| Churn rate (train & test) | 26.54% / 26.54% (stratified) |
-| ML-ready columns after transform | 55 |
-| Missing values after transform | 0 |
+- Logistic Regression
+- Random Forest
+- XGBoost
+- Model evaluation
+- Confusion matrices
+- Model comparison
+- Best model selection
+- Churn probability prediction
+- Customer risk classification
+- Saved trained churn model
+
+## Machine Learning Results
+
+Actual test-set results (Day 2 split: 5,634 train / 1,409 test, `random_state=42`, stratified).
+
+Metrics below are for the **churn class (Yes = 1)**.
+
+| Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
+|-------|----------|-----------|--------|----------|---------|
+| Logistic Regression | 0.7970 | 0.6467 | 0.5187 | 0.5757 | 0.8418 |
+| Random Forest | 0.7807 | 0.6102 | 0.4813 | 0.5381 | 0.8203 |
+| **XGBoost (best)** | **0.8077** | **0.6758** | **0.5294** | **0.5937** | **0.8443** |
+
+**Best model selected: XGBoost**
+
+Selection was based primarily on **F1 Score**, then **Recall**, then **ROC-AUC** (not Accuracy alone), because the dataset is imbalanced (~26.54% churn).
+
+**Test-set risk levels** (initial thresholds: Low &lt; 0.30, Medium &lt; 0.60, High ≥ 0.60):
+
+| Risk | Customers |
+|------|-----------|
+| Low | 872 |
+| Medium | 333 |
+| High | 204 |
+
+High-risk customers (204 / 1,409) are a practical first list for telecom retention outreach.
 
 ```
-Cleaned CSV → Feature Engineering → Encoding/Scaling → Train/Test Split → ML-ready data
+Cleaned → Features → Split → Preprocess → LR / RF / XGBoost → Best Model → Probability → Risk
 ```
-
-Engineered features: `tenure_group`, `total_services`, `has_security_service`, `has_streaming_service`, `is_month_to_month`, `is_long_term_customer`, `average_monthly_revenue`
 
 ## Project Structure
 
 ```
 Customer-Churn-Prediction/
-├── data/raw/                 # Original Telco CSV
-├── data/processed/           # Cleaned + featured + train/test splits
+├── data/raw/
+├── data/processed/
 ├── notebooks/
 │   ├── 01_eda.ipynb
-│   └── 02_feature_engineering.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   └── 03_churn_model.ipynb
 ├── src/
 │   ├── check_data.py
 │   ├── load_to_postgres.py
 │   ├── preprocessing.py
+│   ├── churn_model.py
 │   ├── run_eda_day1.py
-│   └── run_day2.py
+│   ├── run_day2.py
+│   └── run_day3.py
 ├── models/
 │   ├── preprocessor.pkl
-│   └── feature_columns.pkl
+│   ├── feature_columns.pkl
+│   ├── churn_model.pkl
+│   └── churn_model_metadata.pkl
 ├── reports/
-│   ├── figures/              # Day 1 EDA charts
-│   └── feature_summary.csv   # Day 2 feature dictionary
+│   ├── figures/
+│   ├── model_comparison.csv
+│   ├── sample_predictions.csv
+│   └── feature_summary.csv
 ├── sql/
-├── api/
-├── dashboard/
-├── tests/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
@@ -99,30 +115,20 @@ If your password contains `@`, URL-encode it as `%40`.
 
 ## Dataset
 
-IBM Telco Customer Churn CSV:
+IBM Telco Customer Churn CSV: `data/raw/telco_churn.csv`
 
-`data/raw/telco_churn.csv`
-
-## Day 1 Commands
+## Commands
 
 ```powershell
+# Day 1
 python src/check_data.py
 python src/run_eda_day1.py
 python src/load_to_postgres.py
-```
 
-## Day 2 Commands
-
-```powershell
-# Run feature engineering + preprocessing end-to-end
+# Day 2
 python src/run_day2.py
 
-# Or open notebooks/02_feature_engineering.ipynb and Run All
+# Day 3
+python src/run_day3.py
+# Or open notebooks/03_churn_model.ipynb and Run All
 ```
-
-Outputs:
-
-- `data/processed/X_train.csv`, `X_test.csv`, `y_train.csv`, `y_test.csv`
-- `models/preprocessor.pkl`
-- `models/feature_columns.pkl`
-- `reports/feature_summary.csv`

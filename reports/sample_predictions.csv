@@ -1,0 +1,11 @@
+customerID,actual_churn,predicted_churn,churn_probability,risk_level
+4376-KFVRS,No,No,0.0181,Low
+2754-SDJRD,No,Yes,0.8701,High
+9917-KWRBE,No,No,0.0662,Low
+0365-GXEZS,No,No,0.3624,Medium
+9385-NXKDA,No,No,0.0059,Low
+4686-UXDML,No,Yes,0.5952,Medium
+2227-JRSJX,No,No,0.4199,Medium
+4830-FAXFM,No,No,0.1166,Low
+1830-IPXVJ,No,No,0.0128,Low
+4690-LLKUA,Yes,No,0.3608,Medium

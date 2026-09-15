@@ -1,0 +1,13 @@
+Day 3 Churn ML Results
+======================
+
+              Model  Accuracy  Precision  Recall  F1 Score  ROC-AUC
+Logistic Regression    0.7970     0.6467  0.5187    0.5757   0.8418
+      Random Forest    0.7807     0.6102  0.4813    0.5381   0.8203
+            XGBoost    0.8077     0.6758  0.5294    0.5937   0.8443
+
+Best model: XGBoost
+Selected 'XGBoost' because it has the strongest churn-class F1 Score (0.5937), with Recall=0.5294 and ROC-AUC=0.8443. Accuracy alone was not used as the primary criterion because the dataset is imbalanced (~26.5% churn).
+
+High-risk test customers: 204 / 1409
+Risk thresholds: Low <0.30, Medium <0.60, High >=0.60
